@@ -50,6 +50,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.foundation)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -57,17 +58,16 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
-    // 1. Navegación (Requisito: Navegación Funcional)
-    // Permite definir las rutas entre pantallas (Home, Producto, Carrito, Ajustes)
+
+    // 1. Navegación
     implementation("androidx.navigation:navigation-compose:2.7.7")
 
-    // 2. ViewModel y LiveData (Requisito: Gestión de Estado)
-    // Permite que la lógica de la tienda (biblioteca, tema) sobreviva a los cambios de pantalla.
+    // 2. ViewModel
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
 
-    // 3. Almacenamiento Local (Requisito: Almacenamiento Local)
-    // Usaremos SharedPreferences para guardar la lista de juegos 'comprados' y el tema.
-    implementation("androidx.preference:preference-ktx:1.2.1")
+    // 3. Almacenamiento Local (DataStore)
+    // AÑADIDO: Dependencia para usar DataStore Preferences
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
 
     // Dependencias de testing...
     testImplementation(libs.junit)
