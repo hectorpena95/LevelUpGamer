@@ -2,155 +2,167 @@
 
 package com.example.levelupgamer.ui.screens
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.levelupgamer.logic.GameStoreViewModel
 import com.example.levelupgamer.data.listaDeJuegos
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
-import com.example.levelupgamer.data.Juego
+import com.example.levelupgamer.logic.GameStoreViewModel
+import kotlinx.coroutines.launch
 
-// ⚠️ CORRECCIÓN CLAVE: Añadir la anotación para permitir el uso de funciones experimentales
+// ⚠️ OptIn necesario para TopAppBar y ElevatedCard
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductoScreen(
     navController: NavController,
     viewModel: GameStoreViewModel,
-    juegoId: String // Recibido del NavController
+    gameId: String? // El ID que viene de la navegación
 ) {
-    // 1. Obtener los datos del juego y el estado
-    val juego = listaDeJuegos.find { it.idJuego == juegoId }
-    val estaEnBiblioteca = viewModel.estaEnBiblioteca(juegoId)
+    // 1. Obtener el estado y el juego
+    val uiState by viewModel.uiState.collectAsState()
+    val juego = remember(gameId) {
+        listaDeJuegos.find { it.idJuego == gameId }
+    }
 
-    // Si el juego no se encuentra (caso de error), vuelve a Home
+    // 2. Controlar si el juego está en la biblioteca
+    val yaAdquirido = uiState.idsEnBiblioteca.contains(gameId)
+
+    // ******************************************************
+    // 3. SNACKBAR HOST STATE (Nuevo)
+    // ******************************************************
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
     if (juego == null) {
-        navController.popBackStack()
+        // Manejo básico si el juego no se encuentra
+        Scaffold(
+            topBar = { ProductoTopBar(navController) }
+        ) { innerPadding ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("Error: Juego no encontrado", style = MaterialTheme.typography.headlineSmall)
+            }
+        }
         return
     }
 
-    // 2. Definir el contenido de la pantalla
     Scaffold(
         topBar = { ProductoTopBar(navController) },
+        // ******************************************************
+        // 4. MOSTRAR SNACKBAR HOST (Nuevo)
+        // ******************************************************
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = {
-            BotonAccion(
-                juego = juego,
-                estaComprado = estaEnBiblioteca,
-                onAccionClick = {
-                    if (!estaEnBiblioteca) {
-                        // Simulación de compra y actualización de estado
-                        viewModel.agregarJuegoABiblioteca(juegoId)
+            // Barra inferior con la lógica de compra/jugar
+            BottomAppBar(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                // El botón que ejecuta la acción
+                Button(
+                    onClick = {
+                        if (!yaAdquirido) {
+                            viewModel.adquirirJuego(juego.idJuego)
+
+                            // ******************************************************
+                            // 5. MOSTRAR SNACKBAR AL COMPRAR (Nuevo)
+                            // ******************************************************
+                            scope.launch {
+                                snackbarHostState.showSnackbar(
+                                    message = "¡Juego adquirido y añadido a tu Biblioteca!",
+                                    actionLabel = "VER",
+                                    duration = SnackbarDuration.Short
+                                )
+                            }
+                        } else {
+                            // Simulación de acción "Jugar"
+                            scope.launch {
+                                snackbarHostState.showSnackbar(
+                                    message = "Iniciando ${juego.titulo}...",
+                                    duration = SnackbarDuration.Short
+                                )
+                            }
+                        }
+                    },
+                    // Deshabilitar la compra si ya lo tiene
+                    enabled = true, // Siempre activo para mostrar el estado "Jugar"
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                        .height(50.dp)
+                ) {
+                    if (yaAdquirido) {
+                        Text("JUGAR AHORA", fontWeight = FontWeight.Bold)
+                    } else {
+                        Icon(Icons.Filled.ShoppingCart, contentDescription = null)
+                        Spacer(Modifier.width(8.dp))
+                        Text("COMPRAR - $${juego.precio}", fontWeight = FontWeight.Bold)
                     }
                 }
-            )
+            }
         }
     ) { innerPadding ->
-        DetalleProducto(juego, innerPadding)
-    }
-}
-
-@Composable
-fun BotonAccion(
-    juego: Juego,
-    estaComprado: Boolean,
-    onAccionClick: () -> Unit
-) {
-    Surface(shadowElevation = 8.dp) {
-        Row(
+        // Contenido de la Ficha de Producto
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+                .fillMaxSize()
+                .padding(innerPadding)
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp)
         ) {
-            // Precio o Estado
+            // Título
             Text(
-                text = if (estaComprado) "¡En tu Biblioteca!" else "$${juego.precio}",
-                style = MaterialTheme.typography.titleLarge,
+                text = juego.titulo,
+                style = MaterialTheme.typography.headlineLarge,
                 fontWeight = FontWeight.ExtraBold,
-                color = if (estaComprado) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error // Indicador visual de compra
+                color = MaterialTheme.colorScheme.primary
             )
+            Spacer(Modifier.height(8.dp))
 
-            // Botón de Acción
-            Button(
-                onClick = onAccionClick,
-                enabled = !estaComprado, // Deshabilita si ya está comprado
-                modifier = Modifier.width(150.dp)
-            ) {
-                Text(if (estaComprado) "Jugar" else "Comprar")
+            // Categoría
+            AssistChip( // Mejor que Chip para acciones
+                onClick = { /* Acción */ },
+                label = { Text(juego.categoria) }
+            )
+            Spacer(Modifier.height(16.dp))
+
+            // Descripción Larga
+            Text(
+                text = juego.descripcionLarga,
+                style = MaterialTheme.typography.bodyLarge
+            )
+            Spacer(Modifier.height(16.dp))
+
+            // Etiqueta de Adquirido (Si ya lo tiene)
+            if (yaAdquirido) {
+                ElevatedCard(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = "✔️ ¡Ya eres dueño de este juego!",
+                        modifier = Modifier.padding(12.dp),
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
             }
         }
     }
 }
 
-// ⚠️ CORRECCIÓN CLAVE: Aplicar la anotación aquí también y usar AssistChip
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun DetalleProducto(juego: Juego, innerPadding: PaddingValues) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(innerPadding)
-            .verticalScroll(rememberScrollState())
-    ) {
-        // IMAGEN DEL JUEGO: Elemento clave para la Animación Hero
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(250.dp)
-                // Usamos .semantics para dar un identificador único (simulación de Hero ID)
-                .semantics { contentDescription = "imagen_heroe_${juego.idJuego}" }
-                .background(MaterialTheme.colorScheme.primaryContainer),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "IMG_HERO",
-                style = MaterialTheme.typography.displayMedium,
-                fontWeight = FontWeight.Black,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
-            )
-        }
-
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = juego.titulo,
-                style = MaterialTheme.typography.headlineLarge,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(Modifier.height(8.dp))
-
-            // CORRECCIÓN: Reemplazar el antiguo 'Chip' por AssistChip
-            AssistChip(
-                onClick = { /* No-op */ },
-                label = { Text(juego.categoria) }
-            )
-            Spacer(Modifier.height(16.dp))
-
-            // Descripción larga (simulada)
-            Text(
-                text = "Esta es la descripción detallada de ${juego.titulo}. El juego ofrece gráficos impresionantes y una historia envolvente...",
-                style = MaterialTheme.typography.bodyLarge
-            )
-        }
-    }
-}
-
+// Top Bar
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ProductoTopBar(navController: NavController) {

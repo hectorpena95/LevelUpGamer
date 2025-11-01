@@ -1,12 +1,18 @@
+// ui/AppNavigation.kt
+
 package com.example.levelupgamer.ui
 
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavType
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
-import com.example.levelupgamer.logic.GameStoreViewModel
+import androidx.navigation.NavHostController // ⚠️ Importación CLAVE: Necesaria para tipar el controlador
+import androidx.navigation.NavType // ⚠️ Importación CLAVE: Necesaria para NavType
+import androidx.navigation.compose.NavHost // ⚠️ Importación CLAVE: Necesaria para NavHost
+import androidx.navigation.compose.composable // ⚠️ Importación CLAVE: Necesaria para composable
+import androidx.navigation.compose.rememberNavController // ⚠️ Importación CLAVE: Necesaria para rememberNavController
+import androidx.navigation.navArgument // ⚠️ Importación CLAVE: Necesaria para navArgument
+import androidx.lifecycle.viewmodel.compose.viewModel // ⚠️ Importación CLAVE: Necesaria para usar viewModel en MainActivity
+
+import com.example.levelupgamer.logic.GameStoreViewModel // Importación de tu ViewModel
+import com.example.levelupgamer.ui.screens.BibliotecaScreen // ⚠️ Importación CLAVE: Necesaria para la nueva ruta
 import com.example.levelupgamer.ui.screens.HomeScreen
 import com.example.levelupgamer.ui.screens.ProductoScreen
 
@@ -14,13 +20,13 @@ import com.example.levelupgamer.ui.screens.ProductoScreen
 object Routes {
     const val HOME = "home"
     const val PRODUCTO = "producto/{juegoId}"
-    const val BIBLIOTECA = "biblioteca"
-    // NOTA: Se ha eliminado la constante AJUSTES
+    const val BIBLIOTECA = "biblioteca" // Ruta de la biblioteca
 }
 
 @Composable
 fun AppNavigation(viewModel: GameStoreViewModel) {
-    val navController = rememberNavController()
+    // Definimos el NavController
+    val navController: NavHostController = rememberNavController()
 
     NavHost(
         navController = navController,
@@ -40,6 +46,11 @@ fun AppNavigation(viewModel: GameStoreViewModel) {
             if (juegoId != null) {
                 ProductoScreen(navController, viewModel, juegoId)
             }
+        }
+
+        // ⚠️ RUTA 3: BIBLIOTECA (Nueva ruta del Problema 1)
+        composable(Routes.BIBLIOTECA) {
+            BibliotecaScreen(navController, viewModel)
         }
     }
 }

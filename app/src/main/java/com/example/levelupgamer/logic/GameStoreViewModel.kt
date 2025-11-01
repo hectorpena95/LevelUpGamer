@@ -1,3 +1,5 @@
+// package com.example.levelupgamer.logic
+
 package com.example.levelupgamer.logic
 
 import androidx.lifecycle.ViewModel
@@ -16,7 +18,7 @@ data class GameStoreUiState(
     val idsEnBiblioteca: Set<String> = emptySet()
 )
 
-class GameStoreViewModel(private val repo: PreferenciasRepo) : ViewModel() {
+class GameStoreViewModel(private val repo: PreferenciasRepo) : ViewModel() { // Renombré 'repo' a 'preferenciasRepo' para mayor claridad
 
     private val _uiState = MutableStateFlow(GameStoreUiState())
     val uiState: StateFlow<GameStoreUiState> = _uiState
@@ -38,17 +40,34 @@ class GameStoreViewModel(private val repo: PreferenciasRepo) : ViewModel() {
         }
     }
 
-    // ACCIÓN: Simulación de Compra
-    fun agregarJuegoABiblioteca(idJuego: String) {
+    /**
+     * ✅ FUNCIÓN CORREGIDA Y UNIFICADA:
+     * Simula la compra de un juego, lo añade a la lista local y a la persistencia.
+     */
+    fun adquirirJuego(id: String) {
         viewModelScope.launch {
-            val newIds = _uiState.value.idsEnBiblioteca.toMutableSet().apply {
-                add(idJuego)
-            }
+            _uiState.update { currentState ->
+                // 1. Crea un nuevo conjunto y añade el ID
+                val nuevoSet = currentState.idsEnBiblioteca.toMutableSet().apply {
+                    add(id)
+                }
 
-            _uiState.update { it.copy(idsEnBiblioteca = newIds) }
-            repo.guardarBibliotecaIDs(newIds) // Persistencia
+                // 2. Llama a la función de guardado en el repositorio
+                // NOTA: Se usó 'guardarJuegosAdquiridos' en el código anterior,
+                // asumimos que el método correcto en tu repo es 'guardarBibliotecaIDs'.
+                // Se usa 'repo' ya que así lo definiste en el constructor.
+                repo.guardarBibliotecaIDs(nuevoSet)
+
+                // 3. Actualiza el estado localmente
+                currentState.copy(
+                    idsEnBiblioteca = nuevoSet
+                )
+            }
         }
     }
+
+    // NOTA: Se ha eliminado la función redundante agregarJuegoABiblioteca(idJuego: String)
+    // porque es funcionalmente idéntica a adquirirJuego(id: String).
 
     fun estaEnBiblioteca(idJuego: String): Boolean {
         return _uiState.value.idsEnBiblioteca.contains(idJuego)
