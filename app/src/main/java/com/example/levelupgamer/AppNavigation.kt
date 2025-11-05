@@ -1,31 +1,33 @@
-// ui/AppNavigation.kt
-
 package com.example.levelupgamer.ui
 
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavHostController // ⚠️ Importación CLAVE: Necesaria para tipar el controlador
-import androidx.navigation.NavType // ⚠️ Importación CLAVE: Necesaria para NavType
-import androidx.navigation.compose.NavHost // ⚠️ Importación CLAVE: Necesaria para NavHost
-import androidx.navigation.compose.composable // ⚠️ Importación CLAVE: Necesaria para composable
-import androidx.navigation.compose.rememberNavController // ⚠️ Importación CLAVE: Necesaria para rememberNavController
-import androidx.navigation.navArgument // ⚠️ Importación CLAVE: Necesaria para navArgument
-import androidx.lifecycle.viewmodel.compose.viewModel // ⚠️ Importación CLAVE: Necesaria para usar viewModel en MainActivity
-
-import com.example.levelupgamer.logic.GameStoreViewModel // Importación de tu ViewModel
-import com.example.levelupgamer.ui.screens.BibliotecaScreen // ⚠️ Importación CLAVE: Necesaria para la nueva ruta
+// ⚠️ NO NECESITAS: import android.app.Activity
+// ⚠️ NO NECESITAS: import androidx.compose.runtime.LaunchedEffect
+// ⚠️ NO NECESITAS: import androidx.compose.ui.platform.LocalContext
+import androidx.navigation.NavHostController
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.example.levelupgamer.logic.GameStoreViewModel
+import com.example.levelupgamer.ui.screens.BibliotecaScreen
 import com.example.levelupgamer.ui.screens.HomeScreen
 import com.example.levelupgamer.ui.screens.ProductoScreen
+// ⚠️ NO NECESITAS: import com.example.levelupgamer.utilities.KEY_NAVIGATE_TO
 
-// 1. Definición de las Rutas de Navegación (Solo las del Problema 1)
+
+// 1. Definición de las Rutas de Navegación
 object Routes {
     const val HOME = "home"
     const val PRODUCTO = "producto/{juegoId}"
-    const val BIBLIOTECA = "biblioteca" // Ruta de la biblioteca
+    const val BIBLIOTECA = "biblioteca"
 }
 
 @Composable
-fun AppNavigation(viewModel: GameStoreViewModel) {
-    // Definimos el NavController
+fun AppNavigation(
+    viewModel: GameStoreViewModel
+) {
     val navController: NavHostController = rememberNavController()
 
     NavHost(
@@ -48,7 +50,7 @@ fun AppNavigation(viewModel: GameStoreViewModel) {
             }
         }
 
-        // ⚠️ RUTA 3: BIBLIOTECA (Nueva ruta del Problema 1)
+        // RUTA 3: BIBLIOTECA
         composable(Routes.BIBLIOTECA) {
             BibliotecaScreen(navController, viewModel)
         }

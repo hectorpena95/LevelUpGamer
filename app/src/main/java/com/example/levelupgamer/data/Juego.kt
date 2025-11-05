@@ -1,59 +1,54 @@
-// data/Juego.kt
-
 package com.example.levelupgamer.data
 
-// Modelo de Datos para un Juego
 data class Juego(
     val idJuego: String,
     val titulo: String,
     val descripcionCorta: String,
-    // ⚠️ CAMBIO 1: SE AGREGA descripcionLarga
     val descripcionLarga: String,
     val categoria: String,
     val precio: Int,
-    val imagenUrl: String
+    val imagenUrl: String // Ahora contendrá una URL web
 )
 
-// Datos Estáticos de la Tienda (simulación con precios en Pesos Chilenos)
 val listaDeJuegos = listOf(
     Juego(
         idJuego = "001",
-        titulo = "Cyberpunk Neo",
-        descripcionCorta = "Un RPG futurista de mundo abierto con neones y tecnología.",
-        // ⚠️ CAMBIO 2: VALOR ASIGNADO
-        descripcionLarga = "Sumérgete en el vasto mundo abierto de Neo-Kyoto. Personaliza tu personaje cibernético, elige tu camino entre corporaciones y pandillas, y descubre el misterio detrás del apagón digital. Más de 100 horas de contenido épico.",
-        categoria = "RPG",
-        precio = 49990,
-        imagenUrl = "url_cyberpunk_neo"
+        titulo = "Elden Ring",
+        descripcionCorta = "Un épico RPG de acción y fantasía oscura en un vasto mundo abierto.",
+        descripcionLarga = "Explora las Tierras Intermedias, un nuevo mundo de fantasía creado por Hidetaka Miyazaki y George R. R. Martin. Enfréntate a desafíos mortales, crea tu propio camino y conviértete en el Señor del Círculo. Ofrece combate profundo y personalización de personaje ilimitada.",
+        categoria = "RPG de Acción",
+        precio = 59990,
+        // ✅ URL DIRECTA y verificada
+        imagenUrl = "https://image.api.playstation.com/vulcan/ap/rnd/202110/2000/YMUoJUYNX0xWk6eTKuZLr5Iw.jpg"
     ),
     Juego(
         idJuego = "002",
-        titulo = "Aetheria",
-        descripcionCorta = "Aventura de fantasía épica con dragones y magia ancestral.",
-        // ⚠️ CAMBIO 2: VALOR ASIGNADO
-        descripcionLarga = "Viaja a través del continente de Eldoria, asolado por la guerra. Reúne a tu equipo, domina los cinco elementos de la magia y lucha contra el Señor Oscuro que busca sumir al mundo en la noche eterna. Gráficos de última generación y banda sonora orquestal.",
-        categoria = "Fantasía",
-        precio = 34990,
-        imagenUrl = "url_aetheria"
+        titulo = "Baldur's Gate 3",
+        descripcionCorta = "El RPG táctico definitivo basado en Calabozos y Dragones.",
+        descripcionLarga = "Reúne a tu grupo y regresa a los Reinos Olvidados. Experimenta una historia de compañerismo, traición, sacrificio, supervivencia y el atractivo del poder absoluto, forjando un destino épico con cada decisión. Incluye multijugador cooperativo de hasta 4 jugadores.",
+        categoria = "RPG Táctico",
+        precio = 45990,
+        // ✅ URL DIRECTA y verificada
+        imagenUrl = "https://image.api.playstation.com/vulcan/ap/rnd/202302/2321/3098481c9164bb5f33069b37e49fba1a572ea3b89971ee7b.jpg"
     ),
     Juego(
         idJuego = "003",
-        titulo = "Space Race 7",
-        descripcionCorta = "Juego de carreras arcade a través de galaxias distantes.",
-        // ⚠️ CAMBIO 2: VALOR ASIGNADO
-        descripcionLarga = "Compite a velocidades supersónicas en circuitos intergalácticos llenos de peligros y atajos secretos. Desbloquea naves, mejora tus motores y conviértete en el campeón de la Copa Cósmica. Modo multijugador online incluido.",
-        categoria = "Carreras",
-        precio = 19990,
-        imagenUrl = "url_space_race"
+        titulo = "Hogwarts Legacy",
+        descripcionCorta = "Aventura en el mundo de Harry Potter durante el siglo XIX.",
+        descripcionLarga = "Vive la vida de un estudiante en Hogwarts, explora el mundo mágico de finales del siglo XIX. Haz amigos, lucha contra magos oscuros y descubre verdades ocultas del mundo mágico. Incluye vuelo en escoba, clases de hechizos y personalización de casa.",
+        categoria = "Aventura",
+        precio = 49990,
+        // ✅ URL DIRECTA y verificada
+        imagenUrl = "https://i.blogs.es/295b7f/hogwarts-legacy-desktop/1366_2000.jpeg"
     ),
     Juego(
         idJuego = "004",
-        titulo = "Zombies Inc.",
-        descripcionCorta = "Estrategia y supervivencia contra hordas interminables de muertos.",
-        // ⚠️ CAMBIO 2: VALOR ASIGNADO
-        descripcionLarga = "Construye y gestiona tu base mientras coordinas a tus sobrevivientes contra el apocalipsis zombie. Investiga nuevas tecnologías y estrategias de defensa para sobrevivir a la noche. Cada decisión cuenta en este juego de estrategia en tiempo real.",
-        categoria = "Estrategia",
-        precio = 24990,
-        imagenUrl = "url_zombies"
+        titulo = "Forza Horizon 5",
+        descripcionCorta = "El festival de carreras definitivo ambientado en un vibrante México.",
+        descripcionLarga = "Explora el mundo abierto y en constante evolución de México con cientos de los mejores autos del mundo. Compite en carreras extremas, realiza acrobacias y explora paisajes desérticos, selvas densas y ciudades históricas. Incluye clima dinámico y multijugador online.",
+        categoria = "Carreras",
+        precio = 39990,
+        // ✅ URL DIRECTA y verificada
+        imagenUrl = "https://cdn.hobbyconsolas.com/sites/navi.axelspringer.es/public/media/image/2021/08/forza-horizon-5-2448819.jpg"
     )
 )

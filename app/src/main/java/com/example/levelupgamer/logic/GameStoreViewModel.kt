@@ -1,5 +1,3 @@
-// package com.example.levelupgamer.logic
-
 package com.example.levelupgamer.logic
 
 import androidx.lifecycle.ViewModel
@@ -11,14 +9,15 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import com.example.levelupgamer.utilities.GameNotificationManager
+import android.content.Context
 
-// Estado simplificado: Solo necesitamos la lista de IDs comprados.
 data class GameStoreUiState(
     val juegosDisponibles: List<Juego> = listaDeJuegos,
     val idsEnBiblioteca: Set<String> = emptySet()
 )
 
-class GameStoreViewModel(private val repo: PreferenciasRepo) : ViewModel() { // Renombré 'repo' a 'preferenciasRepo' para mayor claridad
+class GameStoreViewModel(private val repo: PreferenciasRepo) : ViewModel() {
 
     private val _uiState = MutableStateFlow(GameStoreUiState())
     val uiState: StateFlow<GameStoreUiState> = _uiState
@@ -29,9 +28,7 @@ class GameStoreViewModel(private val repo: PreferenciasRepo) : ViewModel() { // 
 
     private fun cargarEstadoInicial() {
         viewModelScope.launch {
-            // Solo cargamos los IDs de la biblioteca.
             val ids = repo.cargarBibliotecaIDs()
-
             _uiState.update { currentState ->
                 currentState.copy(
                     idsEnBiblioteca = ids
@@ -40,25 +37,28 @@ class GameStoreViewModel(private val repo: PreferenciasRepo) : ViewModel() { // 
         }
     }
 
-    /**
-     * ✅ FUNCIÓN CORREGIDA Y UNIFICADA:
-     * Simula la compra de un juego, lo añade a la lista local y a la persistencia.
-     */
-    fun adquirirJuego(id: String) {
+    fun estaEnBiblioteca(idJuego: String): Boolean {
+        return _uiState.value.idsEnBiblioteca.contains(idJuego)
+    }
+
+    fun adquirirJuego(id: String, context: Context) {
         viewModelScope.launch {
             _uiState.update { currentState ->
-                // 1. Crea un nuevo conjunto y añade el ID
+
+                // 1. Crear nuevo set y guardar persistencia
                 val nuevoSet = currentState.idsEnBiblioteca.toMutableSet().apply {
                     add(id)
                 }
 
-                // 2. Llama a la función de guardado en el repositorio
-                // NOTA: Se usó 'guardarJuegosAdquiridos' en el código anterior,
-                // asumimos que el método correcto en tu repo es 'guardarBibliotecaIDs'.
-                // Se usa 'repo' ya que así lo definiste en el constructor.
                 repo.guardarBibliotecaIDs(nuevoSet)
 
-                // 3. Actualiza el estado localmente
+                // 2. BUSCA EL TÍTULO DEL JUEGO Y LANZA LA NOTIFICACIÓN
+                val tituloJuego = listaDeJuegos.find { it.idJuego == id }?.titulo ?: "Juego Desconocido"
+
+                // ⭐️ CORRECCIÓN CLAVE: La función de notificación solo necesita el Context y el Título
+                GameNotificationManager.showAcquisitionNotification(context, tituloJuego)
+
+                // 3. Actualizar estado local
                 currentState.copy(
                     idsEnBiblioteca = nuevoSet
                 )
@@ -66,12 +66,18 @@ class GameStoreViewModel(private val repo: PreferenciasRepo) : ViewModel() { // 
         }
     }
 
-    // NOTA: Se ha eliminado la función redundante agregarJuegoABiblioteca(idJuego: String)
-    // porque es funcionalmente idéntica a adquirirJuego(id: String).
+    fun resetearBiblioteca() {
+        viewModelScope.launch {
+            _uiState.update { currentState ->
 
-    fun estaEnBiblioteca(idJuego: String): Boolean {
-        return _uiState.value.idsEnBiblioteca.contains(idJuego)
+                // 1. Guardar un conjunto vacío en el DataStore (persistencia)
+                repo.guardarBibliotecaIDs(emptySet())
+
+                // 2. Actualizar el estado local
+                currentState.copy(
+                    idsEnBiblioteca = emptySet()
+                )
+            }
+        }
     }
-
-    // NOTA: Se ha eliminado la función setTema.
 }

@@ -30,5 +30,4 @@ class PreferenciasRepo(private val context: Context) {
         }
     }
 
-    // NOTA: Se han eliminado las funciones cargarTema y guardarTema.
 }

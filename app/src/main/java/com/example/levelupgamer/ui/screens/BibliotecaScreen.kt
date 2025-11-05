@@ -1,30 +1,35 @@
+// ui.screens/BibliotecaScreen.kt
+
 package com.example.levelupgamer.ui.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.levelupgamer.logic.GameStoreViewModel
 import com.example.levelupgamer.data.Juego
 import com.example.levelupgamer.data.listaDeJuegos
+import coil.compose.AsyncImage
 
-// ⚠️ OptIn necesario para ElevatedCard (soluciona la advertencia de compilación)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BibliotecaScreen(
     navController: NavController,
-    viewModel: GameStoreViewModel
+    viewModel: GameStoreViewModel // El ViewModel es esencial
 ) {
     // 1. Observar el estado (Lista de IDs comprados)
     val uiState by viewModel.uiState.collectAsState()
@@ -36,7 +41,24 @@ fun BibliotecaScreen(
     }
 
     Scaffold(
-        topBar = { BibliotecaTopBar(navController) }
+        topBar = { BibliotecaTopBar(navController) },
+        // ⭐️ BOTÓN FLOTANTE AÑADIDO PARA RESETEAR ⭐️
+        floatingActionButton = {
+            ExtendedFloatingActionButton(
+                onClick = {
+                    // ✅ Llama a la función de reseteo del ViewModel
+                    viewModel.resetearBiblioteca()
+                },
+                icon = {
+                    Icon(
+                        Icons.Default.Refresh, // Ícono de refresco
+                        contentDescription = "Resetear biblioteca"
+                    )
+                },
+                text = { Text("RESET BIBLIOTECA") }
+            )
+        }
+        // ⭐️ FIN DEL BOTÓN FLOTANTE ⭐️
     ) { innerPadding ->
         if (juegosEnBiblioteca.isEmpty()) {
             // Estado vacío: Si no hay juegos comprados
@@ -84,22 +106,16 @@ fun BibliotecaCard(juego: Juego) {
             modifier = Modifier.fillMaxSize(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Área de Jugar (Simulada)
-            Box(
+            AsyncImage(
+                model = juego.imagenUrl,
+                contentDescription = juego.titulo,
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .size(100.dp)
                     .aspectRatio(1f)
-                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
-                    .padding(8.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "JUGAR",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Black,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
+                    .clip(RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp))
+            )
+            // ⭐️ FIN DE ZONA DE IMAGEN ⭐️
 
             // Título del Juego
             Column(

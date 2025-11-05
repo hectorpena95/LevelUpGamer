@@ -1,14 +1,10 @@
-
 package com.example.levelupgamer.logic
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.levelupgamer.data.PreferenciasRepo
 
-/**
- * Fábrica personalizada para crear instancias de GameStoreViewModel.
- * Esto es necesario porque GameStoreViewModel tiene dependencias (PreferenciasRepo).
- */
+
 class GameStoreViewModelFactory(private val repo: PreferenciasRepo) : ViewModelProvider.Factory {
 
     // Sobreescribe el método para crear la instancia del ViewModel

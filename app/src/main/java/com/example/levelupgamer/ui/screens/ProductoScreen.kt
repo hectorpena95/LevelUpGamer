@@ -1,9 +1,8 @@
-// ui.screens/ProductoScreen.kt
-
 package com.example.levelupgamer.ui.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -12,33 +11,37 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.levelupgamer.data.listaDeJuegos
 import com.example.levelupgamer.logic.GameStoreViewModel
 import kotlinx.coroutines.launch
+import coil.compose.AsyncImage
 
-// ⚠️ OptIn necesario para TopAppBar y ElevatedCard
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductoScreen(
     navController: NavController,
     viewModel: GameStoreViewModel,
-    gameId: String? // El ID que viene de la navegación
+    gameId: String?
 ) {
-    // 1. Obtener el estado y el juego
+    // 1. Obtener el Contexto para usar con Notificaciones
+    val context = LocalContext.current
+
+    // 2. Obtener el estado y el juego
     val uiState by viewModel.uiState.collectAsState()
     val juego = remember(gameId) {
         listaDeJuegos.find { it.idJuego == gameId }
     }
 
-    // 2. Controlar si el juego está en la biblioteca
+    // 3. Controlar si el juego está en la biblioteca
     val yaAdquirido = uiState.idsEnBiblioteca.contains(gameId)
 
-    // ******************************************************
-    // 3. SNACKBAR HOST STATE (Nuevo)
-    // ******************************************************
+    // 4. SNACKBAR HOST STATE
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
@@ -61,9 +64,7 @@ fun ProductoScreen(
 
     Scaffold(
         topBar = { ProductoTopBar(navController) },
-        // ******************************************************
-        // 4. MOSTRAR SNACKBAR HOST (Nuevo)
-        // ******************************************************
+        // 5. MOSTRAR SNACKBAR HOST
         snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = {
             // Barra inferior con la lógica de compra/jugar
@@ -74,37 +75,25 @@ fun ProductoScreen(
                 Button(
                     onClick = {
                         if (!yaAdquirido) {
-                            viewModel.adquirirJuego(juego.idJuego)
+                            viewModel.adquirirJuego(juego.idJuego, context)
 
-                            // ******************************************************
-                            // 5. MOSTRAR SNACKBAR AL COMPRAR (Nuevo)
-                            // ******************************************************
+                            // 6. MOSTRAR SNACKBAR AL COMPRAR (¡CORREGIDO AQUÍ!)
                             scope.launch {
                                 snackbarHostState.showSnackbar(
                                     message = "¡Juego adquirido y añadido a tu Biblioteca!",
-                                    actionLabel = "VER",
-                                    duration = SnackbarDuration.Short
-                                )
-                            }
-                        } else {
-                            // Simulación de acción "Jugar"
-                            scope.launch {
-                                snackbarHostState.showSnackbar(
-                                    message = "Iniciando ${juego.titulo}...",
                                     duration = SnackbarDuration.Short
                                 )
                             }
                         }
                     },
-                    // Deshabilitar la compra si ya lo tiene
-                    enabled = true, // Siempre activo para mostrar el estado "Jugar"
+                    enabled = !yaAdquirido,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 8.dp)
                         .height(50.dp)
                 ) {
                     if (yaAdquirido) {
-                        Text("JUGAR AHORA", fontWeight = FontWeight.Bold)
+                        Text("EN LA BIBLIOTECA", fontWeight = FontWeight.Bold)
                     } else {
                         Icon(Icons.Filled.ShoppingCart, contentDescription = null)
                         Spacer(Modifier.width(8.dp))
@@ -114,7 +103,6 @@ fun ProductoScreen(
             }
         }
     ) { innerPadding ->
-        // Contenido de la Ficha de Producto
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -122,6 +110,18 @@ fun ProductoScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp)
         ) {
+
+            AsyncImage(
+                model = juego.imagenUrl, // Usa la URL del juego
+                contentDescription = juego.titulo,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp) // Altura fija para la imagen de portada
+                    .clip(RoundedCornerShape(12.dp)) // Bordes redondeados
+            )
+            Spacer(Modifier.height(16.dp)) // Espacio entre imagen y título
+
             // Título
             Text(
                 text = juego.titulo,
@@ -132,7 +132,7 @@ fun ProductoScreen(
             Spacer(Modifier.height(8.dp))
 
             // Categoría
-            AssistChip( // Mejor que Chip para acciones
+            AssistChip(
                 onClick = { /* Acción */ },
                 label = { Text(juego.categoria) }
             )
